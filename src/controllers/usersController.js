@@ -25,8 +25,22 @@ const postUser = (req, res) => {
       role: body.role,
     });
 
-    user.save().then(() => {
-      res.status(200).json({ user });
+    user.save().then((user) => {
+      // res.status(200).json({ user });
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "1m" }
+      );
+      res.status(200).json({
+        success: true,
+        data: {
+          token: token,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+      });
     });
   }
 };
@@ -42,9 +56,9 @@ const login = (req, res) => {
         bcrypt.compare(password, user.password, function (err, result) {
           if (result) {
             const token = jwt.sign(
-              { userId: user.id, email: user.email },
+              { userId: user.id, email: user.email, role: user.role },
               process.env.JWT_SECRET,
-              { expiresIn: "1h" }
+              { expiresIn: "1d" }
             );
             res.status(200).json({
               success: true,
@@ -72,8 +86,13 @@ const login = (req, res) => {
   }
 };
 
+const checkToken = (req, res) => {
+  res.status(200).json({ success: true });
+};
+
 module.exports = {
   getUser,
   postUser,
   login,
+  checkToken,
 };

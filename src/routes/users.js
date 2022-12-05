@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { getUser, postUser, login } = require("../controllers/usersController");
+const { getUser, postUser, login, checkToken } = require("../controllers/usersController");
 const { check, validationResult } = require("express-validator");
 const User = require("../models/users");
+const auth = require("../middleware/jwtAuth");
+const roleCheck = require("../middleware/roleCheck");
 
 router.get("/", getUser);
 
@@ -38,5 +40,18 @@ router.post(
   ],
   login
 );
+
+router.post(
+  "/login",
+  [
+    check("email", "Please enter valid email").isEmail(),
+    check("password", "Please enter valid password")
+      .isLength({ min: 8 })
+      .isAlphanumeric(),
+  ],
+  login
+);
+
+router.get('/admin', [auth, roleCheck], checkToken);
 
 module.exports = router;
