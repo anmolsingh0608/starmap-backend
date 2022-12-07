@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getUser, postUser, login, checkToken } = require("../controllers/usersController");
+const { getUser, postUser, login, checkToken, adminLogin } = require("../controllers/usersController");
 const { check, validationResult } = require("express-validator");
 const User = require("../models/users");
 const auth = require("../middleware/jwtAuth");
@@ -38,7 +38,7 @@ router.post(
       .isLength({ min: 8 })
       .isAlphanumeric(),
   ],
-  login
+  adminLogin
 );
 
 router.post(

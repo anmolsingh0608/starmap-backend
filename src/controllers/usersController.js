@@ -86,6 +86,47 @@ const login = (req, res) => {
   }
 };
 
+const adminLogin = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(403).json(errors);
+  } else {
+    const { email, password } = req.body;
+    User.findOne({ email: email }).then((user) => {
+      if (user !== null && user.role === "admin") {
+        bcrypt.compare(password, user.password, function (err, result) {
+          if (result) {
+            const token = jwt.sign(
+              { userId: user.id, email: user.email, role: user.role },
+              process.env.JWT_SECRET,
+              { expiresIn: "1d" }
+            );
+            res.status(200).json({
+              success: true,
+              data: {
+                token: token,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+              },
+            });
+          } else {
+            res.status(403).json({
+              success: false,
+              message: "Incorrect email or password",
+            });
+          }
+        });
+      } else {
+        res.status(403).json({
+          success: false,
+          message: "Incorrect email or password",
+        });
+      }
+    });
+  }
+};
+
 const checkToken = (req, res) => {
   res.status(200).json({ success: true });
 };
@@ -95,4 +136,5 @@ module.exports = {
   postUser,
   login,
   checkToken,
+  adminLogin,
 };
